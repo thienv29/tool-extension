@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "Tool",
+    "version": "1.0.0",
+
+    "icons": {
+        "16": "./images/logo.png"
+    },
+    "background": {
+        "service_worker": "./background.js"
+    },
+    "action": {
+        "default_popup": "./popup.html",
+        "default_icon": {
+            "16": "./images/logo.png"
+        },
+        "default_title": "Click Me"
+    },
+    "options_page": "./options.html",
+    "permissions": [
+        "activeTab",
+        "tabs", 
+        "storage", 
+        "scripting"
+    ],
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["foreground.js"]
+        }
+    ]
+}
