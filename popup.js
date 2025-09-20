@@ -1,101 +1,138 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Data
-  const data = [
-    {
-      group: "SGU",
-      items: [
-        { checkboxId: "autoLoginSgu", label: "Auto Login SGU" },
-      ],
-    },
-    {
-      group: "ICLC",
-      items: [
-        { checkboxId: "autoLoginICLC", label: "Auto Login I-CLC.NET (DEMO)" },
-        { checkboxId: "autoLoginEmailPro24", label: "Auto Login Email (pro24.emailserver.vn:2096)" },
-        { checkboxId: "restyleICLC", label: "Restyle" },
-        { checkboxId: "restyleDigischool", label: "Restyle Digischool" },
-        { checkboxId: "autoLoginPleskAdmin", label: "Auto login Plesk" },
-        { checkboxId: "autoLoginMatBao", label: "Auto login Matbao" },
-        { checkboxId: "eclassOnlyShowError", label: "Auto hide header and sidebar of eClass website" },
-        { checkboxId: "autoLoginBitrix", label: "Auto login bitrix Thien" },
-        { checkboxId: "autoLoginBitrixAdmin", label: "Auto login bitrix Admin" },
-      ],
-    },
-    {
-      group: "Thanh Long",
-      items: [
-        { checkboxId: "copyTaskTitle", label: "Copy task title" },
-        { checkboxId: "autoLoginEmailThanhlong", label: "Auto login Thanh Long mail" },
-        { checkboxId: "autoLoginTekio", label: "Auto login tekio" },
-      ],
-    },
-  ];
+  // Configuration for UI groups and items
+  const UI_CONFIG = {
+    groups: [
+      {
+        name: "SGU",
+        items: [
+          { id: "autoLoginSgu", label: "Auto Login SGU" },
+        ],
+      },
+      {
+        name: "ICLC",
+        items: [
+          { id: "autoLoginICLC", label: "Auto Login I-CLC.NET (DEMO)" },
+          { id: "autoLoginEmailPro24", label: "Auto Login Email (pro24.emailserver.vn:2096)" },
+          { id: "restyleICLC", label: "Restyle" },
+          { id: "restyleDigischool", label: "Restyle Digischool" },
+          { id: "autoLoginPleskAdmin", label: "Auto login Plesk" },
+          { id: "autoLoginMatBao", label: "Auto login Matbao" },
+          { id: "eclassOnlyShowError", label: "Auto hide header and sidebar of eClass website" },
+          { id: "autoLoginBitrix", label: "Auto login bitrix Thien" },
+          { id: "autoLoginBitrixAdmin", label: "Auto login bitrix Admin" },
+        ],
+      },
+      {
+        name: "Thanh Long",
+        items: [
+          { id: "copyTaskTitle", label: "Copy task title" },
+          { id: "autoLoginEmailThanhlong", label: "Auto login Thanh Long mail" },
+          { id: "autoLoginTekio", label: "Auto login tekio" },
+        ],
+      },
+    ]
+  };
 
-  const checkboxIds = data.flatMap(group => group.items.map(item => item.checkboxId));
+  // Get all checkbox IDs for storage operations
+  const checkboxIds = UI_CONFIG.groups.flatMap(group =>
+    group.items.map(item => item.id)
+  );
 
-  // Render HTML dynamically
-  const dynamicContainer = document.getElementById("dynamicContainer");
+  /**
+   * Create a Bootstrap card for a group
+   * @param {Object} group - Group configuration
+   * @returns {HTMLElement} - Card element
+   */
+  function createGroupCard(group) {
+    const card = document.createElement("div");
+    card.className = "card mt-2";
 
-  data.forEach(group => {
-    const groupCard = document.createElement("div");
-    groupCard.className = "card mt-2";
+    const cardBody = document.createElement("div");
+    cardBody.className = "card-body";
 
-    const groupCardBody = document.createElement("div");
-    groupCardBody.className = "card-body";
+    const title = document.createElement("h3");
+    title.className = "card-title";
+    title.textContent = group.name;
 
-    const groupTitle = document.createElement("h3");
-    groupTitle.className = "card-title";
-    groupTitle.textContent = group.group;
+    cardBody.appendChild(title);
 
-    groupCardBody.appendChild(groupTitle);
-
+    // Create checkboxes for each item
     group.items.forEach(item => {
-      const formCheck = document.createElement("div");
-      formCheck.className = "form-check form-switch";
-
-      const inputCheckbox = document.createElement("input");
-      inputCheckbox.className = "form-check-input";
-      inputCheckbox.type = "checkbox";
-      inputCheckbox.id = item.checkboxId;
-
-      const labelCheckbox = document.createElement("label");
-      labelCheckbox.className = "form-check-label";
-      labelCheckbox.htmlFor = item.checkboxId;
-      labelCheckbox.textContent = item.label;
-
-      formCheck.appendChild(inputCheckbox);
-      formCheck.appendChild(labelCheckbox);
-
-      groupCardBody.appendChild(formCheck);
+      const formCheck = createCheckbox(item);
+      cardBody.appendChild(formCheck);
     });
 
-    groupCard.appendChild(groupCardBody);
-    dynamicContainer.appendChild(groupCard);
+    card.appendChild(cardBody);
+    return card;
+  }
 
-  });
+  /**
+   * Create a Bootstrap switch checkbox
+   * @param {Object} item - Item configuration
+   * @returns {HTMLElement} - Form check element
+   */
+  function createCheckbox(item) {
+    const formCheck = document.createElement("div");
+    formCheck.className = "form-check form-switch";
 
-  const groupCardSearch = document.createElement("div");
-  groupCardSearch.className = "card mt-2";
-  const groupCardBody = document.createElement("div");
-  groupCardBody.className = "card-body";
+    const input = document.createElement("input");
+    input.className = "form-check-input";
+    input.type = "checkbox";
+    input.id = item.id;
 
-  const groupTitle = document.createElement("h3");
-  groupTitle.className = "card-title";
-  groupTitle.textContent = 'Account iclc';
+    const label = document.createElement("label");
+    label.className = "form-check-label";
+    label.htmlFor = item.id;
+    label.textContent = item.label;
 
-  groupCardBody.appendChild(groupTitle);
-  groupCardSearch.appendChild(groupCardBody);
-  dynamicContainer.appendChild(groupCardSearch);
+    formCheck.appendChild(input);
+    formCheck.appendChild(label);
 
-  // Retrieve and update stored checkbox states
-  chrome.storage.sync.get(checkboxIds, function (result) {
-    checkboxIds.forEach(function (checkboxId) {
-      const checkbox = document.getElementById(checkboxId);
-      checkbox.checked = result[checkboxId] || false;
+    return formCheck;
+  }
 
-      checkbox.addEventListener("change", function () {
-        chrome.storage.sync.set({ [checkboxId]: this.checked });
+  /**
+   * Initialize the popup interface
+   */
+  function initializePopup() {
+    const container = document.getElementById("dynamicContainer");
+    if (!container) {
+      console.error("Container element not found");
+      return;
+    }
+
+    // Clear existing content
+    container.innerHTML = "";
+
+    // Create and append group cards
+    UI_CONFIG.groups.forEach(group => {
+      const groupCard = createGroupCard(group);
+      container.appendChild(groupCard);
+    });
+
+    // Load saved checkbox states
+    loadCheckboxStates();
+  }
+
+  /**
+   * Load checkbox states from Chrome storage
+   */
+  function loadCheckboxStates() {
+    chrome.storage.sync.get(checkboxIds, function (result) {
+      checkboxIds.forEach(function (checkboxId) {
+        const checkbox = document.getElementById(checkboxId);
+        if (checkbox) {
+          checkbox.checked = result[checkboxId] || false;
+
+          // Save state when changed
+          checkbox.addEventListener("change", function () {
+            chrome.storage.sync.set({ [checkboxId]: this.checked });
+          });
+        }
       });
     });
-  });
+  }
+
+  // Initialize the popup
+  initializePopup();
 });
