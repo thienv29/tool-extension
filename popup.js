@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
           { id: "autoLoginEmailPro24", label: "Auto Login Email (pro24.emailserver.vn:2096)" },
           { id: "restyleICLC", label: "Restyle" },
           { id: "restyleDigischool", label: "Restyle Digischool" },
+          { id: "autoDigischoolAdmin", label: "Login Digischool Admin" },
           { id: "autoLoginPleskAdmin", label: "Auto login Plesk" },
           { id: "autoLoginMatBao", label: "Auto login Matbao" },
           { id: "eclassOnlyShowError", label: "Auto hide header and sidebar of eClass website" },

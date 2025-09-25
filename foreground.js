@@ -40,10 +40,15 @@ const CREDENTIALS = {
     username: "thienvu@i-clc.edu.vn",
     password: "Hello2024@"
   },
+  autoDigischoolAdmin: {
+    username: "admin",
+    password: "admin@123"
+  },
   autoLoginBitrixAdmin: {
     username: "admin",
     password: "Admin@@2526"
-  }
+  },
+  restyleDigischool:{}
 };
 
 const LOGIN_SELECTORS = {
@@ -82,6 +87,11 @@ const LOGIN_SELECTORS = {
     password: 'input[name="USER_PASSWORD"]',
     remember: '#USER_REMEMBER',
     submit: ".login-btn"
+  },
+  digischoolAdmin: {
+    username: 'input[name="username"]',
+    password: 'input[name="password"]',
+    submit: '.btnlogin button[type="submit"]'
   }
 };
 
@@ -125,6 +135,11 @@ const SERVICES = {
     credentials: CREDENTIALS.autoLoginBitrix,
     options: { remember: true }
   },
+  autoDigischoolAdmin: {
+    hostname: HOST_NAMES.digischool,
+    selectors: LOGIN_SELECTORS.digischoolAdmin,
+    credentials: CREDENTIALS.autoDigischoolAdmin
+  },
   autoLoginBitrixAdmin: {
     hostname: HOST_NAMES.bitrix,
     selectors: LOGIN_SELECTORS.bitrix,
@@ -136,12 +151,9 @@ const SERVICES = {
 // Initialize extension when page loads
 window.onload = function () {
   chrome.storage.sync.get(Object.keys(CREDENTIALS), function (result) {
-    // Set default values for missing settings
     for (const [key, value] of Object.entries(result)) {
       result[key] = value || false;
     }
-
-    // Execute enabled services
     executeServices(result);
   });
 };
@@ -152,14 +164,7 @@ window.onload = function () {
  */
 function executeServices(settings) {
   const currentHost = window.location.hostname;
-
-  // Execute auto-login services
-  Object.entries(SERVICES).forEach(([serviceId, config]) => {
-    if (settings[serviceId] && currentHost === config.hostname) {
-      executeLoginService(serviceId, config);
-    }
-  });
-
+  
   // Execute styling services
   if (settings.restyleICLC && currentHost === HOST_NAMES.iclcDotNet) {
     applyICLCStyling();
@@ -178,6 +183,14 @@ function executeServices(settings) {
       (currentHost === HOST_NAMES.eclass || currentHost === HOST_NAMES.eclassLocal)) {
     hideEclassInterface();
   }
+
+  // Execute auto-login services
+  Object.entries(SERVICES).forEach(([serviceId, config]) => {
+    if (settings[serviceId] && currentHost === config.hostname) {
+      executeLoginService(serviceId, config);
+    }
+  });
+
 }
 
 /**
@@ -232,6 +245,21 @@ function applyDigischoolStyling() {
     }
   `;
   LoginUtils.applyStyles(css);
+  document.querySelectorAll(
+    'body > section:nth-child(8) > div > div > div > button > p.mr-auto.font-medium'
+  ).forEach((el, idx) => {
+    el.textContent = `${idx + 1}. ${el.textContent}`;
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey && e.key === "Enter") {
+      const btn = document.querySelector('.pull-right.bgmain.viewsite._vh_save');
+      if (btn) {
+        btn.click(); // giả lập click
+      } else {
+        console.warn("Không tìm thấy nút với selector .pull-right.bgmain.viewsite._vh_save");
+      }
+    }
+  });
 }
 
 /**
@@ -312,14 +340,14 @@ class LoginUtils {
       // Wait for and fill username
       const usernameField = await this.waitForElement(selectors.username);
       if (!usernameField) {
-        throw new Error(`Username field not found: ${selectors.username}`);
+        console.error(`Username field not found: ${selectors.username}`);
       }
       usernameField.value = username;
 
       // Wait for and fill password
       const passwordField = await this.waitForElement(selectors.password);
       if (!passwordField) {
-        throw new Error(`Password field not found: ${selectors.password}`);
+        console.error(`Password field not found: ${selectors.password}`);
       }
       passwordField.value = password;
 
@@ -338,7 +366,7 @@ class LoginUtils {
           submitButton.click();
           return true;
         } else {
-          throw new Error(`Submit button not found: ${selectors.submit}`);
+          console.error(`Submit button not found: ${selectors.submit}`);
         }
       }
 
@@ -354,6 +382,8 @@ class LoginUtils {
    * @param {string} css - CSS rules to apply
    */
   static applyStyles(css) {
+    console.log('apply');
+    
     const style = document.createElement("style");
     style.textContent = css;
     document.head.appendChild(style);
